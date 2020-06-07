@@ -7,7 +7,7 @@ class PointsController {
 
         const parsedItems = String(items)
             .split(',')
-            .map(item => Number(item.trim()));
+            .map((item) => Number(item.trim()));
         
         const points = await knex('points')
             .join('point_items', 'points.id', '=', 'point_items.point_id')
@@ -30,11 +30,11 @@ class PointsController {
         }
 
         const items = await knex('items')
-            .join('point_items', 'item.id', '=', 'point_items.item.id')
+            .join('point_items', 'items.id', '=', 'point_items.item_id')
             .where('point_items.point_id', id)
             .select('items.title');
 
-        return response.json(point);
+        return response.json({point, items});
     }
 
     async create (request: Request, response: Response) {
@@ -46,15 +46,13 @@ class PointsController {
             longitude,
             city,
             uf,
-            items
+            items,
         } = request.body;
     
         const trx = await knex.transaction();
 
-        await trx.commit();
-
         const point = {
-            image: 'image',
+            image: 'https://blog.rcky.com.br/wp-content/uploads/2020/01/minimercado.jpg',
             name,
             email,
             whatsapp,
@@ -77,6 +75,8 @@ class PointsController {
         })
     
         await trx('point_items').insert(pointItems);
+
+        await trx.commit();
     
         return response.json({
             id: point_id,
